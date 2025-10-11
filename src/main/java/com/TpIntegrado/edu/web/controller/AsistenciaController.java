@@ -8,6 +8,8 @@ import com.TpIntegrado.edu.persistance.entity.Usuario;
 import com.TpIntegrado.edu.persistance.repository.ClaseRepository;
 import com.TpIntegrado.edu.persistance.repository.UsuarioRepository;
 import com.TpIntegrado.edu.web.dto.AsistenciaDTO;
+import com.TpIntegrado.edu.web.dto.AsistenciaRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -106,61 +108,32 @@ public class AsistenciaController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createAsistencia(@RequestBody Map<String, Object> request) {
-        try {
-            Long claseId = Long.valueOf(request.get("claseId").toString());
-            Long estudianteId = Long.valueOf(request.get("estudianteId").toString());
-            EstadoAsistencia estado = EstadoAsistencia.valueOf(request.get("estado").toString());
-            String observaciones = request.get("observaciones") != null ? request.get("observaciones").toString() : null;
+    public ResponseEntity<?> createAsistencia(@Valid @RequestBody AsistenciaRequest request) {
+        Clase clase = claseRepository.findById(request.getClaseId())
+                .orElseThrow(() -> new IllegalArgumentException("Clase no encontrada"));
+        Usuario estudiante = usuarioRepository.findById(request.getEstudianteId())
+                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
 
-            Clase clase = claseRepository.findById(claseId)
-                    .orElseThrow(() -> new IllegalArgumentException("Clase no encontrada"));
-            Usuario estudiante = usuarioRepository.findById(estudianteId)
-                    .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
+        Asistencia asistencia = new Asistencia(clase, estudiante, request.getEstado());
+        asistencia.setObservaciones(request.getObservaciones());
 
-            Asistencia asistencia = new Asistencia(clase, estudiante, estado);
-            asistencia.setObservaciones(observaciones);
-
-            AsistenciaDTO saved = asistenciaService.save(asistencia);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al crear la asistencia"));
-        }
+        AsistenciaDTO saved = asistenciaService.save(asistencia);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAsistencia(@PathVariable Long id, @RequestBody Map<String, Object> request) {
-        try {
-            EstadoAsistencia estado = EstadoAsistencia.valueOf(request.get("estado").toString());
-            String observaciones = request.get("observaciones") != null ? request.get("observaciones").toString() : null;
+    public ResponseEntity<?> updateAsistencia(@PathVariable Long id, @Valid @RequestBody AsistenciaRequest request) {
+        Asistencia asistencia = new Asistencia();
+        asistencia.setEstado(request.getEstado());
+        asistencia.setObservaciones(request.getObservaciones());
 
-            Asistencia asistencia = new Asistencia();
-            asistencia.setEstado(estado);
-            asistencia.setObservaciones(observaciones);
-
-            AsistenciaDTO updated = asistenciaService.update(id, asistencia);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al actualizar la asistencia"));
-        }
+        AsistenciaDTO updated = asistenciaService.update(id, asistencia);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAsistencia(@PathVariable Long id) {
-        try {
-            asistenciaService.delete(id);
-            return ResponseEntity.ok(Map.of("message", "Asistencia eliminada exitosamente"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al eliminar la asistencia"));
-        }
+        asistenciaService.delete(id);
+        return ResponseEntity.ok(Map.of("message", "Asistencia eliminada exitosamente"));
     }
 }

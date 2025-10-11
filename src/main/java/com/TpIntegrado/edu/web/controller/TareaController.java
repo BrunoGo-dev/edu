@@ -5,12 +5,13 @@ import com.TpIntegrado.edu.persistance.entity.Curso;
 import com.TpIntegrado.edu.persistance.entity.Tarea;
 import com.TpIntegrado.edu.persistance.repository.CursoRepository;
 import com.TpIntegrado.edu.web.dto.TareaDTO;
+import com.TpIntegrado.edu.web.dto.TareaRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -75,62 +76,31 @@ public class TareaController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createTarea(@RequestBody Map<String, Object> request) {
-        try {
-            Long cursoId = Long.valueOf(request.get("cursoId").toString());
-            String titulo = request.get("titulo").toString();
-            String descripcion = request.get("descripcion") != null ? request.get("descripcion").toString() : null;
-            LocalDate fechaLimite = LocalDate.parse(request.get("fechaLimite").toString());
+    public ResponseEntity<?> createTarea(@Valid @RequestBody TareaRequest request) {
+        Curso curso = cursoRepository.findById(request.getCursoId())
+                .orElseThrow(() -> new IllegalArgumentException("Curso no encontrado"));
 
-            Curso curso = cursoRepository.findById(cursoId)
-                    .orElseThrow(() -> new IllegalArgumentException("Curso no encontrado"));
+        Tarea tarea = new Tarea(curso, request.getTitulo(), request.getDescripcion(), request.getFechaLimite());
 
-            Tarea tarea = new Tarea(curso, titulo, descripcion, fechaLimite);
-
-            TareaDTO saved = tareaService.save(tarea);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al crear la tarea"));
-        }
+        TareaDTO saved = tareaService.save(tarea);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateTarea(@PathVariable Long id, @RequestBody Map<String, Object> request) {
-        try {
-            String titulo = request.get("titulo").toString();
-            String descripcion = request.get("descripcion") != null ? request.get("descripcion").toString() : null;
-            LocalDate fechaLimite = LocalDate.parse(request.get("fechaLimite").toString());
-            Boolean activo = request.get("activo") != null ? Boolean.valueOf(request.get("activo").toString()) : true;
+    public ResponseEntity<?> updateTarea(@PathVariable Long id, @Valid @RequestBody TareaRequest request) {
+        Tarea tarea = new Tarea();
+        tarea.setTitulo(request.getTitulo());
+        tarea.setDescripcion(request.getDescripcion());
+        tarea.setFechaLimite(request.getFechaLimite());
+        tarea.setActivo(true);
 
-            Tarea tarea = new Tarea();
-            tarea.setTitulo(titulo);
-            tarea.setDescripcion(descripcion);
-            tarea.setFechaLimite(fechaLimite);
-            tarea.setActivo(activo);
-
-            TareaDTO updated = tareaService.update(id, tarea);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al actualizar la tarea"));
-        }
+        TareaDTO updated = tareaService.update(id, tarea);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTarea(@PathVariable Long id) {
-        try {
-            tareaService.delete(id);
-            return ResponseEntity.ok(Map.of("message", "Tarea eliminada exitosamente"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al eliminar la tarea"));
-        }
+        tareaService.delete(id);
+        return ResponseEntity.ok(Map.of("message", "Tarea eliminada exitosamente"));
     }
 }

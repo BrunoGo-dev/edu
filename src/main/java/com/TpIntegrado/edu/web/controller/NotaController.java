@@ -7,12 +7,13 @@ import com.TpIntegrado.edu.persistance.entity.Usuario;
 import com.TpIntegrado.edu.persistance.repository.EvaluacionRepository;
 import com.TpIntegrado.edu.persistance.repository.UsuarioRepository;
 import com.TpIntegrado.edu.web.dto.NotaDTO;
+import com.TpIntegrado.edu.web.dto.NotaRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -82,61 +83,32 @@ public class NotaController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createNota(@RequestBody Map<String, Object> request) {
-        try {
-            Long estudianteId = Long.valueOf(request.get("estudianteId").toString());
-            Long evaluacionId = Long.valueOf(request.get("evaluacionId").toString());
-            BigDecimal notaValor = new BigDecimal(request.get("nota").toString());
-            String observaciones = request.get("observaciones") != null ? request.get("observaciones").toString() : null;
+    public ResponseEntity<?> createNota(@Valid @RequestBody NotaRequest request) {
+        Usuario estudiante = usuarioRepository.findById(request.getEstudianteId())
+                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
+        Evaluacion evaluacion = evaluacionRepository.findById(request.getEvaluacionId())
+                .orElseThrow(() -> new IllegalArgumentException("Evaluación no encontrada"));
 
-            Usuario estudiante = usuarioRepository.findById(estudianteId)
-                    .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
-            Evaluacion evaluacion = evaluacionRepository.findById(evaluacionId)
-                    .orElseThrow(() -> new IllegalArgumentException("Evaluación no encontrada"));
+        Nota nota = new Nota(estudiante, evaluacion, request.getNota());
+        nota.setObservaciones(request.getObservaciones());
 
-            Nota nota = new Nota(estudiante, evaluacion, notaValor);
-            nota.setObservaciones(observaciones);
-
-            NotaDTO saved = notaService.save(nota);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al crear la nota"));
-        }
+        NotaDTO saved = notaService.save(nota);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateNota(@PathVariable Long id, @RequestBody Map<String, Object> request) {
-        try {
-            BigDecimal notaValor = new BigDecimal(request.get("nota").toString());
-            String observaciones = request.get("observaciones") != null ? request.get("observaciones").toString() : null;
+    public ResponseEntity<?> updateNota(@PathVariable Long id, @Valid @RequestBody NotaRequest request) {
+        Nota nota = new Nota();
+        nota.setNota(request.getNota());
+        nota.setObservaciones(request.getObservaciones());
 
-            Nota nota = new Nota();
-            nota.setNota(notaValor);
-            nota.setObservaciones(observaciones);
-
-            NotaDTO updated = notaService.update(id, nota);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al actualizar la nota"));
-        }
+        NotaDTO updated = notaService.update(id, nota);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteNota(@PathVariable Long id) {
-        try {
-            notaService.delete(id);
-            return ResponseEntity.ok(Map.of("message", "Nota eliminada exitosamente"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al eliminar la nota"));
-        }
+        notaService.delete(id);
+        return ResponseEntity.ok(Map.of("message", "Nota eliminada exitosamente"));
     }
 }

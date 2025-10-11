@@ -8,6 +8,8 @@ import com.TpIntegrado.edu.persistance.entity.Usuario;
 import com.TpIntegrado.edu.persistance.repository.CursoRepository;
 import com.TpIntegrado.edu.persistance.repository.UsuarioRepository;
 import com.TpIntegrado.edu.web.dto.ObservacionDTO;
+import com.TpIntegrado.edu.web.dto.ObservacionRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,66 +93,35 @@ public class ObservacionController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createObservacion(@RequestBody Map<String, Object> request) {
-        try {
-            Long estudianteId = Long.valueOf(request.get("estudianteId").toString());
-            Long docenteId = Long.valueOf(request.get("docenteId").toString());
-            Long cursoId = Long.valueOf(request.get("cursoId").toString());
-            String titulo = request.get("titulo").toString();
-            String contenido = request.get("contenido").toString();
-            TipoObservacion tipo = TipoObservacion.valueOf(request.get("tipo").toString());
+    public ResponseEntity<?> createObservacion(@Valid @RequestBody ObservacionRequest request) {
+        Usuario estudiante = usuarioRepository.findById(request.getEstudianteId())
+                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
+        Usuario docente = usuarioRepository.findById(request.getDocenteId())
+                .orElseThrow(() -> new IllegalArgumentException("Docente no encontrado"));
+        Curso curso = cursoRepository.findById(request.getCursoId())
+                .orElseThrow(() -> new IllegalArgumentException("Curso no encontrado"));
 
-            Usuario estudiante = usuarioRepository.findById(estudianteId)
-                    .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
-            Usuario docente = usuarioRepository.findById(docenteId)
-                    .orElseThrow(() -> new IllegalArgumentException("Docente no encontrado"));
-            Curso curso = cursoRepository.findById(cursoId)
-                    .orElseThrow(() -> new IllegalArgumentException("Curso no encontrado"));
+        Observacion observacion = new Observacion(estudiante, docente, curso, 
+                request.getTitulo(), request.getContenido(), request.getTipo());
 
-            Observacion observacion = new Observacion(estudiante, docente, curso, titulo, contenido, tipo);
-
-            ObservacionDTO saved = observacionService.save(observacion);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al crear la observación"));
-        }
+        ObservacionDTO saved = observacionService.save(observacion);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateObservacion(@PathVariable Long id, @RequestBody Map<String, Object> request) {
-        try {
-            String titulo = request.get("titulo").toString();
-            String contenido = request.get("contenido").toString();
-            TipoObservacion tipo = TipoObservacion.valueOf(request.get("tipo").toString());
+    public ResponseEntity<?> updateObservacion(@PathVariable Long id, @Valid @RequestBody ObservacionRequest request) {
+        Observacion observacion = new Observacion();
+        observacion.setTitulo(request.getTitulo());
+        observacion.setContenido(request.getContenido());
+        observacion.setTipo(request.getTipo());
 
-            Observacion observacion = new Observacion();
-            observacion.setTitulo(titulo);
-            observacion.setContenido(contenido);
-            observacion.setTipo(tipo);
-
-            ObservacionDTO updated = observacionService.update(id, observacion);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al actualizar la observación"));
-        }
+        ObservacionDTO updated = observacionService.update(id, observacion);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteObservacion(@PathVariable Long id) {
-        try {
-            observacionService.delete(id);
-            return ResponseEntity.ok(Map.of("message", "Observación eliminada exitosamente"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al eliminar la observación"));
-        }
+        observacionService.delete(id);
+        return ResponseEntity.ok(Map.of("message", "Observación eliminada exitosamente"));
     }
 }

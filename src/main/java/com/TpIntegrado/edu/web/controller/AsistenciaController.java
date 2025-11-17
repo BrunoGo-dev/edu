@@ -14,6 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,19 +27,23 @@ import java.util.Map;
 /**
  * Controlador REST para la gestión de asistencias
  * Endpoints:
- * - GET    /api/asistencias                    - Obtener todas las asistencias
- * - GET    /api/asistencias/{id}              - Obtener asistencia por ID
- * - POST   /api/asistencias                    - Crear nueva asistencia
- * - PUT    /api/asistencias/{id}              - Actualizar asistencia
- * - DELETE /api/asistencias/{id}              - Eliminar asistencia
- * - GET    /api/asistencias/estudiante/{id}   - Asistencias de un estudiante
- * - GET    /api/asistencias/clase/{id}        - Asistencias de una clase
- * - GET    /api/asistencias/curso/{cursoId}/fecha/{fecha} - Asistencias por curso y fecha
- * - GET    /api/asistencias/estudiante/{estudianteId}/curso/{cursoId} - Asistencias de estudiante en curso
- * - GET    /api/asistencias/estudiante/{estudianteId}/curso/{cursoId}/resumen - Resumen de asistencias
+ * - GET /api/asistencias - Obtener todas las asistencias
+ * - GET /api/asistencias/{id} - Obtener asistencia por ID
+ * - POST /api/asistencias - Crear nueva asistencia
+ * - PUT /api/asistencias/{id} - Actualizar asistencia
+ * - DELETE /api/asistencias/{id} - Eliminar asistencia
+ * - GET /api/asistencias/estudiante/{id} - Asistencias de un estudiante
+ * - GET /api/asistencias/clase/{id} - Asistencias de una clase
+ * - GET /api/asistencias/curso/{cursoId}/fecha/{fecha} - Asistencias por curso
+ * y fecha
+ * - GET /api/asistencias/estudiante/{estudianteId}/curso/{cursoId} -
+ * Asistencias de estudiante en curso
+ * - GET /api/asistencias/estudiante/{estudianteId}/curso/{cursoId}/resumen -
+ * Resumen de asistencias
  */
 @RestController
 @RequestMapping("/api/asistencias")
+@Tag(name = "Asistencias", description = "Endpoints para la gestión de asistencias de estudiantes")
 public class AsistenciaController {
 
     @Autowired
@@ -47,6 +56,11 @@ public class AsistenciaController {
     private UsuarioRepository usuarioRepository;
 
     @GetMapping
+    @Operation(summary = "Obtener todas las asistencias", description = "Retorna una lista de todas las asistencias registradas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de asistencias obtenida exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     public ResponseEntity<List<AsistenciaDTO>> getAllAsistencias() {
         List<AsistenciaDTO> asistencias = asistenciaService.findAll();
         return ResponseEntity.ok(asistencias);
@@ -73,7 +87,7 @@ public class AsistenciaController {
 
     @GetMapping("/estudiante/{estudianteId}/curso/{cursoId}")
     public ResponseEntity<List<AsistenciaDTO>> getAsistenciasByEstudianteAndCurso(
-            @PathVariable Long estudianteId, 
+            @PathVariable Long estudianteId,
             @PathVariable Long cursoId) {
         List<AsistenciaDTO> asistencias = asistenciaService.findByEstudianteAndCurso(estudianteId, cursoId);
         return ResponseEntity.ok(asistencias);
@@ -92,18 +106,21 @@ public class AsistenciaController {
     public ResponseEntity<Map<String, Long>> getResumenAsistencias(
             @PathVariable Long estudianteId,
             @PathVariable Long cursoId) {
-        Long presentes = asistenciaService.countByEstudianteAndCursoAndEstado(estudianteId, cursoId, EstadoAsistencia.PRESENTE);
-        Long ausentes = asistenciaService.countByEstudianteAndCursoAndEstado(estudianteId, cursoId, EstadoAsistencia.AUSENTE);
-        Long tardanzas = asistenciaService.countByEstudianteAndCursoAndEstado(estudianteId, cursoId, EstadoAsistencia.TARDANZA);
-        Long justificadas = asistenciaService.countByEstudianteAndCursoAndEstado(estudianteId, cursoId, EstadoAsistencia.JUSTIFICADO);
-        
+        Long presentes = asistenciaService.countByEstudianteAndCursoAndEstado(estudianteId, cursoId,
+                EstadoAsistencia.PRESENTE);
+        Long ausentes = asistenciaService.countByEstudianteAndCursoAndEstado(estudianteId, cursoId,
+                EstadoAsistencia.AUSENTE);
+        Long tardanzas = asistenciaService.countByEstudianteAndCursoAndEstado(estudianteId, cursoId,
+                EstadoAsistencia.TARDANZA);
+        Long justificadas = asistenciaService.countByEstudianteAndCursoAndEstado(estudianteId, cursoId,
+                EstadoAsistencia.JUSTIFICADO);
+
         Map<String, Long> resumen = Map.of(
-            "presentes", presentes,
-            "ausentes", ausentes,
-            "tardanzas", tardanzas,
-            "justificadas", justificadas
-        );
-        
+                "presentes", presentes,
+                "ausentes", ausentes,
+                "tardanzas", tardanzas,
+                "justificadas", justificadas);
+
         return ResponseEntity.ok(resumen);
     }
 

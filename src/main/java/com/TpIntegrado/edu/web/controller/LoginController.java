@@ -42,7 +42,7 @@ public class LoginController {
         String token = jwtUtil.generateToken(usuario);
         String role = usuario.getRol() != null ? usuario.getRol().name() : null;
 
-        AuthResponse resp = new AuthResponse(token, role);
+        AuthResponse resp = new AuthResponse(usuario.getId(), token, role);
         return ResponseEntity.ok(resp);
     }
 

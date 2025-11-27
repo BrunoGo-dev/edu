@@ -3,9 +3,11 @@ package com.TpIntegrado.edu.web.controller;
 import com.TpIntegrado.edu.domain.service.AsistenciaService;
 import com.TpIntegrado.edu.persistance.entity.Asistencia;
 import com.TpIntegrado.edu.persistance.entity.Clase;
+import com.TpIntegrado.edu.persistance.entity.Curso;
 import com.TpIntegrado.edu.persistance.entity.EstadoAsistencia;
 import com.TpIntegrado.edu.persistance.entity.Usuario;
 import com.TpIntegrado.edu.persistance.repository.ClaseRepository;
+import com.TpIntegrado.edu.persistance.repository.CursoRepository;
 import com.TpIntegrado.edu.persistance.repository.UsuarioRepository;
 import com.TpIntegrado.edu.web.dto.AsistenciaDTO;
 import com.TpIntegrado.edu.web.dto.AsistenciaRequest;
@@ -50,6 +52,9 @@ public class AsistenciaController {
 
     @Autowired
     private ClaseRepository claseRepository;
+
+    @Autowired
+    private CursoRepository cursoRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -125,8 +130,21 @@ public class AsistenciaController {
 
     @PostMapping
     public ResponseEntity<?> createAsistencia(@Valid @RequestBody AsistenciaRequest request) {
-        Clase clase = claseRepository.findById(request.getClaseId())
-                .orElseThrow(() -> new IllegalArgumentException("Clase no encontrada"));
+        // Buscar clase por cursoId y fecha
+        Clase clase = claseRepository.findByCursoIdAndFecha(request.getCursoId(), request.getFecha())
+                .orElseGet(() -> {
+                    // Si no existe la clase, crearla automáticamente
+                    Curso curso = cursoRepository.findById(request.getCursoId())
+                            .orElseThrow(() -> new IllegalArgumentException("Curso no encontrado"));
+
+                    Clase nuevaClase = new Clase();
+                    nuevaClase.setCurso(curso);
+                    nuevaClase.setFecha(request.getFecha());
+                    nuevaClase.setTema("Clase del " + request.getFecha());
+
+                    return claseRepository.save(nuevaClase);
+                });
+
         Usuario estudiante = usuarioRepository.findById(request.getEstudianteId())
                 .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
 

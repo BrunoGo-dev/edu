@@ -2,9 +2,12 @@ package com.TpIntegrado.edu.domain.service;
 
 import com.TpIntegrado.edu.persistance.entity.Curso;
 import com.TpIntegrado.edu.persistance.repository.CursoRepository;
+import com.TpIntegrado.edu.persistance.repository.InscripcionRepository;
 import com.TpIntegrado.edu.persistance.repository.UsuarioRepository;
 import com.TpIntegrado.edu.web.dto.CursoDTO;
+import com.TpIntegrado.edu.web.dto.UsuarioResponse;
 import com.TpIntegrado.edu.web.mapper.CursoMapper;
+import com.TpIntegrado.edu.web.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +24,16 @@ public class CursoService {
     private CursoRepository cursoRepository;
 
     @Autowired
+    private InscripcionRepository inscripcionRepository;
+
+    @Autowired
     private UsuarioRepository usuarioRepository;
 
     @Autowired
     private CursoMapper cursoMapper;
+
+    @Autowired
+    private UserMapper userMapper;
 
     // Métodos generales
     public List<CursoDTO> findAll() {
@@ -68,7 +77,8 @@ public class CursoService {
         if (!usuarioRepository.existsById(estudianteId)) {
             throw new IllegalArgumentException("Estudiante no encontrado con id: " + estudianteId);
         }
-        return cursoRepository.findCursosByEstudianteId(estudianteId).stream()
+        return inscripcionRepository.findByEstudianteId(estudianteId).stream()
+                .map(inscripcion -> inscripcion.getCurso())
                 .map(cursoMapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -77,8 +87,21 @@ public class CursoService {
         if (!usuarioRepository.existsById(estudianteId)) {
             throw new IllegalArgumentException("Estudiante no encontrado con id: " + estudianteId);
         }
-        return cursoRepository.findCursoActivosByEstudianteId(estudianteId).stream()
+        return inscripcionRepository.findByEstudianteId(estudianteId).stream()
+                .map(inscripcion -> inscripcion.getCurso())
+                .filter(curso -> curso.getActivo())
                 .map(cursoMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Método para obtener estudiantes de un curso
+    public List<UsuarioResponse> findEstudiantesByCursoId(Long cursoId) {
+        if (!cursoRepository.existsById(cursoId)) {
+            throw new IllegalArgumentException("Curso no encontrado con id: " + cursoId);
+        }
+        return inscripcionRepository.findByCursoId(cursoId).stream()
+                .map(inscripcion -> inscripcion.getEstudiante())
+                .map(userMapper::toResponse)
                 .collect(Collectors.toList());
     }
 

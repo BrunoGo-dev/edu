@@ -8,6 +8,8 @@ import com.TpIntegrado.edu.persistance.repository.MateriaRepository;
 import com.TpIntegrado.edu.persistance.repository.UsuarioRepository;
 import com.TpIntegrado.edu.web.dto.CursoDTO;
 import com.TpIntegrado.edu.web.dto.CursoRequest;
+import com.TpIntegrado.edu.web.dto.UsuarioResponse;
+import com.TpIntegrado.edu.web.mapper.UserMapper;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,7 @@ import java.util.Map;
  * - GET /api/cursos/estudiante/{estudianteId} - Cursos de un estudiante
  * - GET /api/cursos/estudiante/{estudianteId}/activos - Cursos activos de un
  * estudiante
+ * - GET /api/cursos/{cursoId}/estudiantes - Estudiantes inscritos en un curso
  * - POST /api/cursos - Crear nuevo curso
  * - PUT /api/cursos/{id} - Actualizar curso
  * - DELETE /api/cursos/{id} - Eliminar curso
@@ -44,6 +47,9 @@ public class CursoController {
 
     @Autowired
     private MateriaRepository materiaRepository;
+
+    @Autowired
+    private UserMapper userMapper;
 
     // Endpoints generales
     @GetMapping
@@ -89,6 +95,13 @@ public class CursoController {
     public ResponseEntity<List<CursoDTO>> getCursosActivosByEstudiante(@PathVariable Long estudianteId) {
         List<CursoDTO> cursos = cursoService.findActivosByEstudianteId(estudianteId);
         return ResponseEntity.ok(cursos);
+    }
+
+    // Endpoints para obtener estudiantes de un curso
+    @GetMapping("/{cursoId}/estudiantes")
+    public ResponseEntity<List<UsuarioResponse>> getEstudiantesByCurso(@PathVariable Long cursoId) {
+        List<UsuarioResponse> estudiantes = cursoService.findEstudiantesByCursoId(cursoId);
+        return ResponseEntity.ok(estudiantes);
     }
 
     // CRUD operations

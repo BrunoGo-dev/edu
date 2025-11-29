@@ -134,6 +134,7 @@ public class AsistenciaController {
         Clase clase = claseRepository.findByCursoIdAndFecha(request.getCursoId(), request.getFecha())
                 .orElseGet(() -> {
                     // Si no existe la clase, crearla automáticamente
+                    @SuppressWarnings("null")
                     Curso curso = cursoRepository.findById(request.getCursoId())
                             .orElseThrow(() -> new IllegalArgumentException("Curso no encontrado"));
 
@@ -145,6 +146,7 @@ public class AsistenciaController {
                     return claseRepository.save(nuevaClase);
                 });
 
+        @SuppressWarnings("null")
         Usuario estudiante = usuarioRepository.findById(request.getEstudianteId())
                 .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
 

@@ -1,4 +1,3 @@
-
 package com.TpIntegrado.edu.persistance.entity;
 
 import jakarta.persistence.*;

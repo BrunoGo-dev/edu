@@ -1,88 +1,71 @@
-## 🎯 Key Features
+# 🎓 EduTrack - Plataforma Académica
 
-### Attendance Management (`/api/asistencias`)
+Sistema de gestión académica integral desarrollado con Spring Boot. Permite la administración de cursos, estudiantes, docentes, asistencias, notas y tareas de manera eficiente y escalable.
 
-- ✅ Full CRUD operations
-- ✅ Query by student, class, course, date
-- ✅ Attendance summary with statistics
-- ✅ Duplicate prevention
-- ✅ Multiple attendance states
+## 🚀 Tecnologías
 
-### Grade Management (`/api/notas`)
+*   **Java 21**
+*   **Spring Boot 3.5.5** (Web, Data JPA, Validation)
+*   **MySQL 8.0**
+*   **Docker & Docker Compose**
+*   **JWT** (JSON Web Tokens) para seguridad
 
-- ✅ Full CRUD operations
-- ✅ Query by student, evaluation, course
-- ✅ Validation (0-100 range)
-- ✅ Observations support
-- ✅ Duplicate prevention
+## ✨ Funcionalidades Principales
 
-### Assignment Management (`/api/tareas`)
+*   **👥 Gestión de Usuarios**: Roles de Docente y Estudiante.
+*   **📅 Asistencias**: Registro y consulta de asistencia por curso y fecha.
+*   **📝 Notas y Calificaciones**: Gestión completa de evaluaciones y promedios.
+*   **📚 Tareas y Entregas**: Asignación de tareas y recepción de entregas digitales.
+*   **💬 Observaciones**: Feedback cualitativo (Positivo, Negativo, Sugerencia).
 
-- ✅ Full CRUD operations
-- ✅ Query by course, active status
-- ✅ Pending assignments filter
-- ✅ Date-based filtering
-- ✅ Active/inactive status
+## 🛠️ Instalación y Despliegue
 
-### Observation Management (`/api/observaciones`)
+### Requisitos Previos
+*   Docker y Docker Compose instalados.
+*   Opcional: Java 21 y Maven si deseas ejecutarlo localmente sin Docker.
 
-- ✅ Full CRUD operations
-- ✅ Query by student, teacher, course, type
-- ✅ 4 observation types: POSITIVA, NEGATIVA, NEUTRAL, SUGERENCIA
-- ✅ Rich filtering capabilities
+### 🐳 Ejecución con Docker (Recomendado)
 
-## 🔧 Technologies & Patterns
+1.  **Clonar el repositorio**:
+    ```bash
+    git clone <url-del-repo>
+    cd edu
+    ```
 
-### Technologies
+2.  **Configurar Variables de Entorno**:
+    Crea un archivo `.env` en la raíz del proyecto basándote en el ejemplo:
+    ```properties
+    SERVER_PORT=8080
+    
+    # Base de datos (Nube o Local)
+    DB_URL=jdbc:mysql://HOST:3306/plataforma_academica
+    DB_USERNAME=usuario
+    DB_PASSWORD=contraseña
+    
+    # Seguridad
+    JWT_SECRET=TuClaveSecretaSuperSegura
+    JWT_EXPIRATION_MS=3600000
+    ```
 
-- ✅ Spring Boot 3.5.5
-- ✅ Java 17
-- ✅ Spring Data JPA
-- ✅ MySQL Database
-- ✅ Jakarta Bean Validation
-- ✅ Maven Build Tool
+3.  **Levantar la aplicación**:
+    ```bash
+    docker-compose up --build
+    ```
+    La API estará disponible en `http://localhost:8080`.
 
-## 🚀 Build & Run
-
-### Build the project
+### 💻 Ejecución Local (Desarrollo)
 
 ```bash
 ./mvnw clean package
-```
-
-### Run the application
-
-```bash
 ./mvnw spring-boot:run
 ```
 
-### Access the API
+## 📂 Estructura del Proyecto
 
-```
-http://localhost:8080/api/
-```
-
----
-
-## 📁 Project Structure
-
-```
-edu/
-├── src/main/java/com/TpIntegrado/edu/
-│   ├── domain/
-│   │   └── service/              # 4 Service classes
-│   ├── persistance/
-│   │   ├── entity/               # 5 new + 8 existing entities
-│   │   └── repository/           # 8 Repository interfaces
-│   └── web/
-│       ├── controller/           # 5 REST controllers
-│       ├── dto/                  # 9 DTOs
-│       └── mapper/               # 5 Mapper classes
-├── src/main/resources/
-│   └── application.properties    # Database configuration
-├── API_DOCUMENTATION.md          # Complete API reference
-├── IMPLEMENTATION_SUMMARY.md     # Technical details
-└── README.md                     # This file
-```
+El proyecto sigue una arquitectura en capas clásica:
+*   `web`: Controladores REST, DTOs y Manejo de Excepciones.
+*   `domain`: Lógica de negocio (Servicios).
+*   `persistance`: Entidades JPA y Repositorios.
 
 ---
+Desarrollado para el TP Integrado de Educación.

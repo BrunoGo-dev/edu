@@ -9,7 +9,6 @@ import com.TpIntegrado.edu.persistance.repository.UsuarioRepository;
 import com.TpIntegrado.edu.web.dto.CursoDTO;
 import com.TpIntegrado.edu.web.dto.CursoRequest;
 import com.TpIntegrado.edu.web.dto.UsuarioResponse;
-import com.TpIntegrado.edu.web.mapper.UserMapper;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -47,9 +46,6 @@ public class CursoController {
 
     @Autowired
     private MateriaRepository materiaRepository;
-
-    @Autowired
-    private UserMapper userMapper;
 
     // Endpoints generales
     @GetMapping

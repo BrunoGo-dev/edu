@@ -9,5 +9,8 @@ import java.util.List;
 @Repository
 public interface CursoRepository extends CrudRepository<Curso, Long> {
     List<Curso> findByDocenteId(Long docenteId);
+
     List<Curso> findByActivoTrue();
+
+    List<Curso> findByDocenteIdAndActivoTrue(Long docenteId);
 }

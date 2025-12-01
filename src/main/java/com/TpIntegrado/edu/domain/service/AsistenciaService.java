@@ -1,11 +1,8 @@
 package com.TpIntegrado.edu.domain.service;
 
 import com.TpIntegrado.edu.persistance.entity.Asistencia;
-import com.TpIntegrado.edu.persistance.entity.Clase;
 import com.TpIntegrado.edu.persistance.entity.EstadoAsistencia;
-import com.TpIntegrado.edu.persistance.entity.Usuario;
 import com.TpIntegrado.edu.persistance.repository.AsistenciaRepository;
-import com.TpIntegrado.edu.persistance.repository.ClaseRepository;
 import com.TpIntegrado.edu.web.dto.AsistenciaDTO;
 import com.TpIntegrado.edu.web.mapper.AsistenciaMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +20,6 @@ public class AsistenciaService {
 
     @Autowired
     private AsistenciaRepository asistenciaRepository;
-
-    @Autowired
-    private ClaseRepository claseRepository;
 
     @Autowired
     private AsistenciaMapper asistenciaMapper;
@@ -73,7 +67,8 @@ public class AsistenciaService {
     public AsistenciaDTO save(Asistencia asistencia) {
         if (asistenciaRepository.existsByClaseIdAndEstudianteId(
                 asistencia.getClase().getId(), asistencia.getEstudiante().getId())) {
-            throw new IllegalArgumentException("Ya existe un registro de asistencia para este estudiante en esta clase");
+            throw new IllegalArgumentException(
+                    "Ya existe un registro de asistencia para este estudiante en esta clase");
         }
         Asistencia saved = asistenciaRepository.save(asistencia);
         return asistenciaMapper.toDTO(saved);
@@ -85,11 +80,11 @@ public class AsistenciaService {
         if (existingOpt.isEmpty()) {
             throw new IllegalArgumentException("Asistencia no encontrada con id: " + id);
         }
-        
+
         Asistencia existing = existingOpt.get();
         existing.setEstado(asistencia.getEstado());
         existing.setObservaciones(asistencia.getObservaciones());
-        
+
         Asistencia updated = asistenciaRepository.save(existing);
         return asistenciaMapper.toDTO(updated);
     }
